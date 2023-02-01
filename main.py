@@ -37,12 +37,9 @@ def test():
 
 def tkinter_window():
     global user_discount_tk, s_date_tk, e_date_tk
-    # global s_date, e_date
     lable_1 = ttk.Label(text='Выберите название скидки')
     lable_1.pack()
     user_discount_tk = ttk.Combobox(window, width=30, values=rows, textvariable=user_discount)
-    # user_discount['values'] = rows
-    # user_discount.current(0)  # установите вариант по умолчанию
     user_discount_tk.pack()
     lable_2 = ttk.Label(text='Начальная дата в формате YYYYMMDD (20220101)')
     s_date_tk = ttk.Entry(textvariable=s_date)
@@ -121,7 +118,6 @@ def main_sql_query():
     res = cursor.fetchall()
     for i, row in enumerate(res, 1):
         results.append([row[0], row[1], row[2], row[3], int(row[4])])
-        # print(i, row[0], row[1], row[2], row[3], int(row[4]))
     with open(f'{u}_{datetime.now().strftime("%d-%m-%Y_%H-%M-%S")}.csv', 'w') as file:
         writer = csv.writer(file, delimiter=';', lineterminator='\r')
         writer.writerow(header)
