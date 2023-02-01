@@ -1,53 +1,90 @@
+from tkinter import *
+from tkinter import ttk
+
 import pyodbc
 import csv
 from datetime import datetime
 
 conn = pyodbc.connect(
     'Driver={SQL Server};'
-    'Server=PREDATOR\SQLEXPRESS;'
-    'Database=RK7;'
+    'Server=OTP5\SQL_MY;'
+    'Database=RK7_igora;'
     'uid=sa;'
     'pwd=ucspiter'
     )
 
+window = Tk()
+window.title('Выгрузка отчета в CSV')
+window.geometry('300x250+500+350')
+window.resizable(width=False, height=False)
+
 cursor = conn.cursor()
 rows = []
 results = []
-user_discount = ''
-s_date = ''
-e_date = ''
+user_discount = StringVar()
+s_date = StringVar()
+e_date = StringVar()
 now = datetime.now()
 header = ('Дата', 'Название скидки', 'Табельный номер', 'ФИО', 'Итого')
+
+
+def test():
+    print(s_date.get(), e_date.get(), user_discount.get())
+    user_discount_tk.delete('0', END)
+    s_date_tk.delete('0', END)
+    e_date_tk.delete('0', END)
+
+
+def tkinter_window():
+    global user_discount_tk, s_date_tk, e_date_tk
+    # global s_date, e_date
+    lable_1 = ttk.Label(text='Выберите название скидки')
+    lable_1.pack()
+    user_discount_tk = ttk.Combobox(window, width=30, values=rows, textvariable=user_discount)
+    # user_discount['values'] = rows
+    # user_discount.current(0)  # установите вариант по умолчанию
+    user_discount_tk.pack()
+    lable_2 = ttk.Label(text='Начальная дата в формате YYYYMMDD (20220101)')
+    s_date_tk = ttk.Entry(textvariable=s_date)
+    lable_2.pack()
+    s_date_tk.pack()
+    lable_3 = ttk.Label(text='Конечная дата в формате YYYYMMDD (20220131)')
+    e_date_tk = ttk.Entry(textvariable=e_date)
+    lable_3.pack()
+    e_date_tk.pack()
+    button = ttk.Button(window, text='Создать отчет...', command=main_sql_query)
+    button.pack()
+
+    window.mainloop()
 
 
 def get_discount():
     global rows, user_discount
     cursor.execute(
         '''
-        select NAME from DISCOUNTS where SIFR > 1000000
+        select NAME from DISCOUNTS where SIFR > 1001000
         '''
         )
     res = cursor.fetchall()
     for row in res:
         rows.append(row[0])
-    for i, n in enumerate(range(1, len(rows) + 1)):
-        print(n, rows[i])
-    user_input_discount = int(input('\n\nВыберите подразделение: \n'))
-    user_discount = str(rows[user_input_discount - 1])
 
 
 def main_sql_query():
-    global s_date, e_date
+    global s_date, e_date, user_discount
+    u = user_discount.get()
+    s = s_date.get()
+    e = e_date.get()
     cursor.execute(f'''
-        declare @start_date date = '{s_date}'
-        declare @end_date date = '{e_date}'        
+        declare @start_date date = '{s}'
+        declare @end_date date = '{e}'        
         SELECT
           format(GlobalShifts00."SHIFTDATE", 'd', 'no') AS "SHIFTDATE",
           Discounts00."NAME" AS "DISCOUNT",
           PDSCards02."TEL1" as "Tabel_Number",
           DishDiscounts00."HOLDER" AS "HOLDER",                                                                                                                
           sum(PayBindings00.PAYSUM) AS "BINDEDSUM"
-        
+
         FROM DISCPARTS                                                                                                                                         
         LEFT JOIN PayBindings PayBindings00                                                                                                                    
           ON (PayBindings00.Visit = DiscParts.Visit) AND (PayBindings00.MidServer = DiscParts.MidServer) AND (PayBindings00.UNI = DiscParts.BindingUNI)     
@@ -70,14 +107,14 @@ def main_sql_query():
         WHERE                                                                                                                                                  
           ((PrintChecks00.State = 6) OR (PrintChecks00.State = 7))                                                                                             
           and (DishDiscounts00."CARDCODE" <> '')
-          and Discounts00."NAME" = '{user_discount}'
+          and Discounts00."NAME" = '{u}'
           and GlobalShifts00."SHIFTDATE" between @start_date and @end_date
         group by
           GlobalShifts00."SHIFTDATE",
           Discounts00."NAME",
           PDSCards02."TEL1",
           DishDiscounts00."HOLDER"
-  
+
     '''
                    )
 
@@ -85,29 +122,30 @@ def main_sql_query():
     for i, row in enumerate(res, 1):
         results.append([row[0], row[1], row[2], row[3], int(row[4])])
         # print(i, row[0], row[1], row[2], row[3], int(row[4]))
-    with open(f'{user_discount}_{datetime.now().strftime("%d-%m-%Y_%H-%M-%S")}.csv', 'w') as file:
+    with open(f'{u}_{datetime.now().strftime("%d-%m-%Y_%H-%M-%S")}.csv', 'w') as file:
         writer = csv.writer(file, delimiter=';', lineterminator='\r')
         writer.writerow(header)
         for j in range(len(results)):
             writer.writerow(results[j])
 
+    user_discount_tk.delete('0', END)
+    s_date_tk.delete('0', END)
+    e_date_tk.delete('0', END)
+
 
 def start_date():
     global s_date
-    s_date = input("Начальная дата в формате YYYYMMDD:\n")
+    s_date = int(input("Начальная дата в формате YYYYMMDD:\n"))
 
 
 def end_date():
     global e_date
-    e_date = input("Конечная дата в формате YYYYMMDD:\n")
+    e_date = int(input("Конечная дата в формате YYYYMMDD:\n"))
 
 
 def main():
     get_discount()
-    start_date()
-    end_date()
-    print('Идет обработка запроса, ожидайте...')
-    main_sql_query()
+    tkinter_window()
 
 
 if __name__ == "__main__":
