@@ -133,14 +133,14 @@ def main_sql_query():
         mb.showerror('Ошибка', 'Введите корректную дату!')
 
 
-def start_date():
-    global s_date
-    s_date = int(input("Начальная дата в формате YYYYMMDD:\n"))
-
-
-def end_date():
-    global e_date
-    e_date = int(input("Конечная дата в формате YYYYMMDD:\n"))
+# def start_date():
+#     global s_date
+#     s_date = int(input("Начальная дата в формате YYYYMMDD:\n"))
+#
+#
+# def end_date():
+#     global e_date
+#     e_date = int(input("Конечная дата в формате YYYYMMDD:\n"))
 
 
 def main():
