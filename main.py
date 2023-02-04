@@ -28,10 +28,10 @@ header = ('Дата', 'Название скидки', 'Табельный но�
 
 
 # def test():
-    # print(s_date.get(), e_date.get(), user_discount.get())
-    # user_discount_tk.delete('0', END)
-    # s_date_tk.delete('0', END)
-    # e_date_tk.delete('0', END)
+# print(s_date.get(), e_date.get(), user_discount.get())
+# user_discount_tk.delete('0', END)
+# s_date_tk.delete('0', END)
+# e_date_tk.delete('0', END)
 
 
 def tkinter_window():
@@ -131,7 +131,6 @@ def main_sql_query():
         mb.showinfo('INFO', f'Файл с именем {u}_{s}-{e}_{datetime.now().strftime("%H-%M-%S")}.csv создан')
     except pyodbc.DataError:
         mb.showerror('Ошибка', 'Введите корректную дату!')
-        # print('[SQL Server]Ошибка преобразования даты или времени из символьной строки')
 
 
 def start_date():
